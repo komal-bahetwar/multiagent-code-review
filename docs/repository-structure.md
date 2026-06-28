@@ -4,6 +4,8 @@
 
 This project follows a **Monorepo (Monolithic Repository)** approach, where all project components are maintained in a single Git repository.
 
+The project uses a **single Python workspace** managed by **uv**. Both the FastAPI backend and the Streamlit user interface share the same virtual environment and dependency management, simplifying development and onboarding.
+
 This allows all team members and AI coding agents to have complete visibility into the project, making development, testing, documentation, and deployment significantly easier.
 
 ---
@@ -15,15 +17,16 @@ A monorepo provides several advantages for this project:
 - Single source of truth
 - Easier collaboration across a 10-member team
 - Shared documentation
+- Single Python environment using `uv`
 - Consistent coding standards
+- Simplified dependency management
 - Simplified CI/CD
 - Better support for AI coding assistants (Cursor, Claude Code, GitHub Copilot, Codex, etc.)
-- Easier dependency management
 - Centralized version control
 
 ---
 
-# Repository Structure
+## Repository Structure
 
 ```text
 multiagent-code-review/
@@ -47,6 +50,9 @@ multiagent-code-review/
 │   └── screenshots/
 │
 ├── backend/
+│   ├── pyproject.toml
+│   ├── uv.lock
+│   ├── .python-version
 │   ├── app/
 │   ├── agents/
 │   ├── graph/
@@ -55,14 +61,13 @@ multiagent-code-review/
 │   ├── models/
 │   ├── services/
 │   ├── api/
-│   ├── tests/
 │   ├── prompts/
-│   ├── evaluation/
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── streamlit/
-│   └── assets/
+│   ├── ui/
+│   │   └── streamlit/
+│   │       ├── Home.py
+│   │       └── pages/
+│   ├── tests/
+│   └── evaluation/
 │
 ├── datasets/
 │   ├── raw/
@@ -126,45 +131,39 @@ Contains all project documentation.
 |---------|----------|
 | architecture | High-level architecture documents |
 | api | API specifications |
-| design | Design documents and technical notes |
-| diagrams | System diagrams and flowcharts |
+| design | Technical design documents |
+| diagrams | Architecture and workflow diagrams |
 | meeting-notes | Weekly meeting notes |
 | decisions | Architecture Decision Records (ADRs) |
 | reports | Evaluation reports and final documentation |
-| references | Research papers and useful links |
+| references | Research papers and useful resources |
 | screenshots | UI screenshots and demo images |
 
 ---
 
 # backend/
 
-Contains the complete backend implementation.
+The backend is the core of the project and is managed as a single **Python project** using **uv**.
+
+Both the FastAPI REST API and the Streamlit user interface share the same Python environment and dependencies.
 
 | Folder | Purpose |
 |---------|----------|
+| pyproject.toml | Python project configuration |
+| uv.lock | Locked dependency versions |
+| .python-version | Python version used by uv |
 | app | FastAPI application entry point |
 | agents | AI agents (Security, Bug, Style, Patch, Test) |
-| graph | LangGraph workflow definitions |
+| graph | LangGraph workflows and orchestration |
 | rag | Retrieval-Augmented Generation pipeline |
-| tools | Helper utilities and external integrations |
+| tools | Utility modules and integrations |
 | models | Pydantic models and schemas |
 | services | Business logic |
 | api | REST API endpoints |
+| prompts | Prompt templates for LLMs |
+| ui/streamlit | Streamlit dashboard and user interface |
 | tests | Unit and integration tests |
-| prompts | LLM prompts |
-| evaluation | Backend evaluation scripts |
-| requirements.txt | Python dependencies |
-
----
-
-# frontend/
-
-Contains the user interface.
-
-| Folder | Purpose |
-|---------|----------|
-| streamlit | Streamlit application |
-| assets | Images, CSS, icons and static resources |
+| evaluation | Evaluation scripts and metrics |
 
 ---
 
@@ -176,81 +175,81 @@ Contains all datasets used during development and evaluation.
 |---------|----------|
 | raw | Original datasets |
 | processed | Cleaned datasets |
-| synthetic | AI-generated samples |
+| synthetic | AI-generated datasets |
 | samples | Small demo datasets |
 
 ---
 
 # knowledge-base/
 
-Stores documents used by the RAG pipeline.
+Contains documents indexed by the RAG pipeline.
 
 | Folder | Purpose |
 |---------|----------|
 | owasp | OWASP Top-10 documentation |
 | cwe | CWE knowledge base |
-| pep8 | Python style guide |
+| pep8 | Python coding standards |
 | python | Python reference documentation |
-| indexed | Vector database source files |
+| indexed | Documents prepared for vector indexing |
 
 ---
 
 # scripts/
 
-Automation scripts.
+Utility scripts used throughout the project.
 
 | Script | Purpose |
 |--------|----------|
-| setup.py | Project setup |
-| ingest_docs.py | Import RAG documents |
+| setup.py | Project initialization |
+| ingest_docs.py | Load documents into the knowledge base |
 | build_index.py | Build vector indexes |
 | run_tests.py | Execute automated tests |
-| benchmark.py | Performance benchmarking |
+| benchmark.py | Benchmark performance |
 
 ---
 
 # infrastructure/
 
-Infrastructure-as-Code and deployment resources.
+Infrastructure and deployment configuration.
 
 | Folder | Purpose |
 |---------|----------|
-| docker | Dockerfiles |
-| github-actions | CI/CD workflow templates |
-| deployment | Deployment configuration |
+| docker | Dockerfiles and Docker configuration |
+| github-actions | CI/CD templates |
+| deployment | Deployment manifests and scripts |
 
 ---
 
 # experiments/
 
-Contains prototypes and experimental features that are not yet production-ready.
+Contains experimental features, prototypes, and proof-of-concepts.
 
 ---
 
 # notebooks/
 
-Jupyter notebooks used for:
+Jupyter notebooks for:
 
 - Data exploration
-- Prompt experimentation
+- Prompt engineering
 - Embedding analysis
 - Model evaluation
-- Research
+- Research experiments
 
 ---
 
 # evaluation/
 
-Stores evaluation outputs.
+Stores evaluation reports and benchmark results.
 
-Examples:
+Examples include:
 
 - RAGAS scores
 - Precision / Recall
 - F1 Score
 - Patch Success Rate
-- Latency Reports
-- Benchmark Results
+- Latency reports
+- Benchmark comparisons
 
 ---
 
@@ -264,18 +263,44 @@ GitHub-specific configuration.
 
 ---
 
+# Development Workflow
+
+The project uses a **single Python environment** managed by **uv**.
+
+Initialize the environment:
+
+```bash
+cd backend
+uv sync
+```
+
+Run the FastAPI server:
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+Run the Streamlit dashboard:
+
+```bash
+uv run streamlit run ui/streamlit/Home.py
+```
+
+---
+
 # Repository Principles
 
 The team should follow these principles throughout development:
 
-- Keep documentation updated.
-- Use feature branches for all development.
-- Never commit secrets or API keys.
-- Write tests for new functionality.
-- Keep AI prompts version controlled.
-- Store datasets separately from source code.
-- Maintain a clean and modular architecture.
-- Ensure every component is independently testable.
+- Maintain a single Python environment using `uv`
+- Keep documentation updated
+- Use feature branches for all development
+- Never commit secrets or API keys
+- Write tests for new functionality
+- Version control all LLM prompts
+- Store datasets separately from source code
+- Keep modules loosely coupled and independently testable
+- Follow clean architecture and modular design principles
 
 ---
 
@@ -292,16 +317,17 @@ As the project evolves, additional directories may be added:
 
 ---
 
-## Summary
+# Summary
 
 This repository is organized to support:
 
 - Multi-agent AI development
 - FastAPI backend services
-- Streamlit frontend
-- Retrieval-Augmented Generation (RAG)
+- Streamlit dashboard
 - LangGraph orchestration
+- Retrieval-Augmented Generation (RAG)
+- Evaluation and benchmarking
 - CI/CD automation
 - Team collaboration
-- AI-assisted development
-- Production-quality software engineering practices
+- AI-assisted software development
+- Production-quality engineering practices
